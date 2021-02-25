@@ -1,0 +1,7 @@
+name: fact_check
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - -r file:requirements.txt
+prefix: /home/apollo/miniconda3/envs/fact_check
