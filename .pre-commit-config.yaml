@@ -3,7 +3,6 @@
 
 exclude: '.git|.tox|.env|.gitignore'
 default_stages: [commit]
-fail_fast: true
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
