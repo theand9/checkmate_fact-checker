@@ -3,7 +3,6 @@ import os
 
 import newspaper
 import requests
-from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from requests.exceptions import HTTPError
 
@@ -34,44 +33,43 @@ def webRequest(url):
     return None
 
 
-def saveData(article_data):
+def saveData(articles_data):
     with open(
         os.path.join(
             os.path.dirname(os.path.dirname(os.getcwd())),
-            f"data/query/{article_data['headline']}.json",
+            "data/query/query_result.json",
         ),
         "w+",
     ) as json_file:
-        json.dump(article_data, json_file, ensure_ascii=False, indent=4)
+        json.dump(articles_data, json_file, ensure_ascii=False, indent=4)
 
 
-def genArticleData(url_list):
-    for url in url_list:
-        article = requests.get(url).text
+def genArticleData(articles):
+    articles_data = []
+    for article_data in enumerate(articles):
+        article_author = article_data["author"]
+        article_title = article_data["title"]
+        article_website = article_data["source"]["name"]
+        article_url = article_data["url"]
+        article_date = article_data["publishedAt"]
 
-        soup = BeautifulSoup(article, features="lxml")
-        meta = json.loads(soup.find("script", type="application/ld+json").string)
-
-        article_url = meta["url"]
-        article_website = article_url.split("//")[-1].split("/")[0].split("?")[0]
-        article_headline = meta["headline"]
-        try:
-            article_author = meta["author"][0]["name"]
-        except KeyError:
-            article_author = None
-        article_date = meta["datePublished"]
+        article = requests.get(article_url).text
         article_text = newspaper.fulltext(article)
+        article_text = article_text.replace("\n", "")
+        article_text = article_text.replace("\t", "")
 
         article_data = {
             "url": article_url,
             "website": article_website,
             "date": article_date,
-            "headline": article_headline,
+            "title": article_title,
             "author": article_author,
             "text": article_text,
         }
 
-        saveData(article_data)
+        articles_data.append(article_data)
+
+    saveData(articles_data)
 
 
 def delExisting():
@@ -80,7 +78,7 @@ def delExisting():
     )
 
     for file in os.listdir(dir_name):
-        if file.endswith(".txt"):
+        if file.endswith(".txt") or file.endswith(".json"):
             os.remove(os.path.join(dir_name, file))
 
 
@@ -91,6 +89,5 @@ if __name__ == "__main__":
 
     url = f"https://newsapi.org/v2/everything?q={ip_fact}&apiKey="
     json_dump = webRequest(url)
-    url_list = [i[j] for i in json_dump["articles"] for j in i if j == "url"]
 
-    genArticleData(url_list)
+    genArticleData(json_dump["articles"])
