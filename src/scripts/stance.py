@@ -1,22 +1,10 @@
-import os
-
 import nltk
 import numpy as np
-import pandas as pd
 from keras.models import load_model
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 
 
-def discardArticle(main_df, preds):
-    for count, pred in enumerate(preds):
-        # ['unrelated' 'agree' 'discuss' 'disagree']
-        if np.amax(pred) == pred[0] or np.amax(pred) == pred[3]:
-            main_df = main_df.drop(count)
-
-    return main_df
-
-
-def predictStance(data_text, data_heading):
+def predictStance(data_text, data_heading, helper_path):
     model = load_model(f"{helper_path}/src/models/stance/")
 
     return model.predict([data_text, data_heading])
@@ -68,20 +56,4 @@ def procDataStance(stance_df, helper_path):
                     except Exception:
                         pass
 
-    return predictStance(data_text, data_heading)
-
-
-def loadData(data_path):
-    main_df = pd.read_json(f"{helper_path}/data/query/query_result.json")
-    stance_df = main_df.loc[:, ["text", "title"]]
-
-    return main_df, stance_df
-
-
-if __name__ == "__main__":
-    helper_path = os.path.dirname(os.path.dirname(os.getcwd()))
-
-    main_df, stance_df = loadData(helper_path)
-    preds = procDataStance(stance_df, helper_path)
-
-    main_df = discardArticle(main_df, preds)
+    return predictStance(data_text, data_heading, helper_path)
