@@ -1,12 +1,13 @@
 import os
 
+from checkfake import procDataFake
 from result import calcResult
 from retrieve import genArticleData
 from stance import procDataStance
 from utils import (
     cleanString,
     delExisting,
-    discardArticle,
+    discardFakeArticle,
     loadData,
     saveData,
     webRequest,
@@ -31,18 +32,20 @@ if __name__ == "__main__":
     print("Data Saved")
 
     # Stance Prediction 1
-    main_df, stance_df = loadData(save_path)
-    preds = procDataStance(stance_df, helper_path)
+    main_df, model_df = loadData(save_path)
+    preds = procDataStance(model_df, helper_path)
 
-    main_df = discardArticle(main_df, preds)
     print("Stance Detection 1 Complete")
 
     # Fake News Detection
+    main_df, model_df = loadData(save_path)
+    preds = procDataFake(model_df, helper_path)
+
+    model_df = discardFakeArticle(model_df, preds)
+    main_df = discardFakeArticle(main_df, preds)
     print("Fake News Detection Complete")
 
     # Stance Detection 2
-    # main_df, stance_df = loadData(save_path)
-    # stance_df.drop("title", axis=1, inplace=True)
     stance_df = main_df.loc[:, ["text"]]
     stance_df["title"] = [fact_query] * len(stance_df.index)
 

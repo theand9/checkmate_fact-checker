@@ -1,6 +1,6 @@
 import json
 import os
-import re
+import string
 
 import numpy as np
 import pandas as pd
@@ -59,17 +59,26 @@ def loadData(save_path):
     return main_df, stance_df
 
 
-def discardArticle(main_df, preds):
+def discardStanceArticle(df, preds):
     for count, pred in enumerate(preds):
         # ['unrelated' 'agree' 'discuss' 'disagree']
         if np.amax(pred) == pred[0] or np.amax(pred) == pred[3]:
-            main_df = main_df.drop(count)
+            df = df.drop(count)
 
-    return main_df
+    return df
+
+
+def discardFakeArticle(df, preds):
+    for count, pred in enumerate(preds):
+        # ['real', 'fake']
+        if pred[0] < pred[1]:
+            df = df.drop(count)
+
+    return df
 
 
 def cleanString(ip_str):
-    ip_str = re.sub("[^A-Za-z0-9]+", " ", ip_str)
+    ip_str = ip_str.translate(str.maketrans("", "", string.punctuation))
     str_tokens = word_tokenize(ip_str)
 
     return " ".join(
