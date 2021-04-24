@@ -61,11 +61,11 @@ def loadData(save_path):
 
 def discardStanceArticle(df, preds):
     for count, pred in enumerate(preds):
-        # ['unrelated' 'agree' 'discuss' 'disagree']
-        if np.amax(pred) == pred[0] or np.amax(pred) == pred[3]:
+        # ['discuss' 'unrelated' 'disagree'  'agree']
+        if np.amax(pred) == pred[1] or np.amax(pred) == pred[2]:
             df = df.drop(count)
 
-    return df
+    return df.reset_index(drop=True)
 
 
 def discardFakeArticle(df, preds):
@@ -74,12 +74,12 @@ def discardFakeArticle(df, preds):
         if pred[0] < pred[1]:
             df = df.drop(count)
 
-    return df
+    return df.reset_index(drop=True)
 
 
 def cleanString(ip_str):
     ip_str = ip_str.translate(str.maketrans("", "", string.punctuation))
-    str_tokens = word_tokenize(ip_str)
+    str_tokens = word_tokenize(ip_str.lower())
 
     return " ".join(
         [word for word in str_tokens if word not in stopwords.words("english")]

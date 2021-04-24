@@ -8,6 +8,7 @@ from utils import (
     cleanString,
     delExisting,
     discardFakeArticle,
+    discardStanceArticle,
     loadData,
     saveData,
     webRequest,
@@ -35,10 +36,11 @@ if __name__ == "__main__":
     main_df, model_df = loadData(save_path)
     preds = procDataStance(model_df, helper_path)
 
+    model_df = discardStanceArticle(model_df, preds)
+    main_df = discardStanceArticle(main_df, preds)
     print("Stance Detection 1 Complete")
 
     # Fake News Detection
-    main_df, model_df = loadData(save_path)
     preds = procDataFake(model_df, helper_path)
 
     model_df = discardFakeArticle(model_df, preds)
@@ -46,10 +48,11 @@ if __name__ == "__main__":
     print("Fake News Detection Complete")
 
     # Stance Detection 2
-    stance_df = main_df.loc[:, ["text"]]
+    stance_df = model_df.loc[:, ["text"]]
     stance_df["title"] = [fact_query] * len(stance_df.index)
 
     preds = procDataStance(stance_df, helper_path)
+    print("Stance Detection 2 Complete")
 
     # Final Result
     conf_score, agree_idx, disagree_idx = calcResult(main_df, preds)
