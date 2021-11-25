@@ -54,7 +54,9 @@ def saveData(articles_data, save_path):
 
 def loadData(save_path):
     main_df = pd.read_json(save_path)
-    stance_df = main_df.loc[:, ["text", "title"]]
+    main_df.author.fillna(main_df.website, inplace=True)
+
+    stance_df = main_df[["text", "title"]].copy()
 
     return main_df, stance_df
 
@@ -71,7 +73,7 @@ def discardStanceArticle(df, preds):
 def discardFakeArticle(df, preds):
     for count, pred in enumerate(preds):
         # ['real', 'fake']
-        if pred[0] < pred[1]:
+        if pred[0] <= pred[1]:
             df = df.drop(count)
 
     return df.reset_index(drop=True)
